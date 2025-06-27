@@ -25,25 +25,6 @@ local FloprLib = {
 	SaveCfg = false
 }
 
--- Feather Icons (загрузка иконок с GitHub)
-local Icons = {}
-local Success, Response = pcall(function()
-	Icons = HttpService:JSONDecode(game:HttpGetAsync("https://raw.githubusercontent.com/evoincorp/lucideblox/master/src/modules/util/icons.json")).icons
-end)
-
-if not Success then
-	warn("\nFloprLib - Failed to load Feather Icons. Error code: " .. Response .. "\n")
-end	
-
-local function GetIcon(IconName)
-	if Icons[IconName] ~= nil then
-		return Icons[IconName]
-	else
-		return nil
-	end
-end   
-
--- Создание основного ScreenGui
 local Flopr = Instance.new("ScreenGui")
 Flopr.Name = "Flopr"
 if syn then
@@ -53,7 +34,6 @@ else
 	Flopr.Parent = gethui() or game.CoreGui
 end
 
--- Проверка, запущена ли библиотека
 function FloprLib:IsRunning()
 	if gethui then
 		return Flopr.Parent == gethui()
@@ -62,7 +42,6 @@ function FloprLib:IsRunning()
 	end
 end
 
--- Добавление подключений с автоматическим отключением
 local function AddConnection(Signal, Function)
 	if not FloprLib:IsRunning() then
 		return
@@ -81,7 +60,6 @@ task.spawn(function()
 	end
 end)
 
--- Функция для перетаскивания окон
 local function MakeDraggable(DragPoint, Main)
 	pcall(function()
 		local Dragging, DragInput, MousePos, FramePos = false
@@ -113,7 +91,6 @@ local function MakeDraggable(DragPoint, Main)
 	end)
 end    
 
--- Утилиты для создания элементов
 local function Create(Name, Properties, Children)
 	local Object = Instance.new(Name)
 	for i, v in next, Properties or {} do
@@ -228,7 +205,6 @@ local function CheckKey(Table, Key)
 	end
 end
 
--- Элементы GUI
 CreateElement("Corner", function(Scale, Offset)
 	return Create("UICorner", {CornerRadius = UDim.new(Scale or 0, Offset or 10)})
 end)
@@ -282,9 +258,7 @@ CreateElement("ScrollFrame", function(Color, Width)
 end)
 
 CreateElement("Image", function(ImageID)
-	local ImageNew = Create("ImageLabel", {Image = ImageID, BackgroundTransparency = 1})
-	if GetIcon(ImageID) ~= nil then ImageNew.Image = GetIcon(ImageID) end	
-	return ImageNew
+	return Create("ImageLabel", {Image = ImageID, BackgroundTransparency = 1})
 end)
 
 CreateElement("ImageButton", function(ImageID)
@@ -304,7 +278,6 @@ CreateElement("Label", function(Text, TextSize, Transparency)
 	})
 end)
 
--- Контейнер уведомлений
 local NotificationHolder = SetProps(SetChildren(MakeElement("TFrame"), {
 	SetProps(MakeElement("List"), {
 		HorizontalAlignment = Enum.HorizontalAlignment.Center,
@@ -319,7 +292,6 @@ local NotificationHolder = SetProps(SetChildren(MakeElement("TFrame"), {
 	Parent = Flopr
 })
 
--- Создание уведомлений
 function FloprLib:MakeNotification(NotificationConfig)
 	spawn(function()
 		NotificationConfig.Name = NotificationConfig.Name or "Notification"
@@ -379,15 +351,14 @@ function FloprLib:MakeNotification(NotificationConfig)
 	end)
 end    
 
--- Инициализация библиотеки
 function FloprLib:Init()
 	if FloprLib.SaveCfg then	
 		pcall(function()
 			if isfile(FloprLib.Folder .. "/" .. game.GameId .. ".txt") then
 				LoadCfg(readfile(FloprLib.Folder .. "/" .. game.GameId .. ".txt"))
 				FloprLib:MakeNotification({
-					Name = "Конфигурация",
-					Content = "Автоматически загружена конфигурация для игры " .. game.GameId .. ".",
+					Name = "Configuration",
+					Content = "Automatically loaded configuration for game " .. game.GameId .. ".",
 					Time = 5
 				})
 			end
@@ -395,7 +366,6 @@ function FloprLib:Init()
 	end	
 end	
 
--- Создание окна
 function FloprLib:MakeWindow(WindowConfig)
 	local FirstTab = true
 	local Minimized = false
@@ -455,7 +425,7 @@ function FloprLib:MakeWindow(WindowConfig)
 		}), "Text")
 	})
 
-	local DragPoint = SetProps(MakeElement("TFrame"), {Size = UDim2GLenum.new(1, 0, 0, 50)})
+	local DragPoint = SetProps(MakeElement("TFrame"), {Size = UDim2.new(1, 0, 0, 50)})
 
 	local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
 		Size = UDim2.new(0, 150, 1, -50),
@@ -486,7 +456,7 @@ function FloprLib:MakeWindow(WindowConfig)
 				Font = Enum.Font.GothamBold,
 				ClipsDescendants = true
 			}), "Text"),
-			AddThemeObject(SetProps(MakeElement("Label", "", 12), {Size = UDim-ge.new(1, -60, 0, 12), Position = UDim2.new(0, 50, 1, -25), Visible = not WindowConfig.HidePremium}), "TextDark")
+			AddThemeObject(SetProps(MakeElement("Label", "", 12), {Size = UDim2.new(1, -60, 0, 12), Position = UDim2.new(0, 50, 1, -25), Visible = not WindowConfig.HidePremium}), "TextDark")
 		}),
 	}), "Second")
 
@@ -534,8 +504,8 @@ function FloprLib:MakeWindow(WindowConfig)
 		MainWindow.Visible = false
 		UIHidden = true
 		FloprLib:MakeNotification({
-			Name = "Интерфейс скрыт",
-			Content = "Нажми Left Control, чтобы открыть интерфейс снова",
+			Name = "Interface Hidden",
+			Content = "Press Left Control to toggle the interface",
 			Time = 5
 		})
 		WindowConfig.CloseCallback()
@@ -628,8 +598,6 @@ function FloprLib:MakeWindow(WindowConfig)
 				Name = "Title"
 			}), "Text")
 		})
-
-		if GetIcon(TabConfig.Icon) ~= nil then TabFrame.Ico.Image = GetIcon(TabConfig.Icon) end	
 
 		local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5), {
 			Size = UDim2.new(1, -150, 1, -50),
@@ -1294,155 +1262,4 @@ function FloprLib:MakeWindow(WindowConfig)
 					HueSelection
 				})
 
-				local ColorpickerContainer = Create("Frame", {Position = UDim2.new(0, 0, 0, 32), Size = UDim2.new(1, 0, 1, -32), BackgroundTransparency = 1, ClipsDescendants = true}, {
-					Hue,
-					Color,
-					Create("UIPadding", {PaddingLeft = UDim.new(0, 35), PaddingRight = UDim.new(0, 35), PaddingBottom = UDim.new(0, 10), PaddingTop = UDim.new(0, 17)})
-				})
-
-				local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
-				local ColorpickerBox = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
-					Size = UDim2.new(0, 24, 0, 24),
-					Position = UDim2.new(1, -12, 0.5, 0),
-					AnchorPoint = Vector2.new(1, 0.5)
-				}), {AddThemeObject(MakeElement("Stroke"), "Stroke")}), "Main")
-
-				local ColorpickerFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
-					Size = UDim2.new(1, 0, 0, 38),
-					Parent = ItemParent
-				}), {
-					SetProps(SetChildren(MakeElement("TFrame"), {
-						AddThemeObject(SetProps(MakeElement("Label", ColorpickerConfig.Name, 15), {Size = UDim2.new(1, -12, 1, 0), Position = UDim2.new(0, 12, 0, 0), Font = Enum.Font.GothamBold, Name = "Content"}), "Text"),
-						ColorpickerBox,
-						Click,
-						AddThemeObject(SetProps(MakeElement("Frame"), {Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1), Name = "Line", Visible = false}), "Stroke"), 
-					}), {Size = UDim2.new(1, 0, 0, 38), ClipsDescendants = true, Name = "F"}),
-					ColorpickerContainer,
-					AddThemeObject(MakeElement("Stroke"), "Stroke"),
-				}), "Second")
-
-				AddConnection(Click.MouseButton1Click, function()
-					Colorpicker.Toggled = not Colorpicker.Toggled
-					TweenService:Create(ColorpickerFrame, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = Colorpicker.Toggled and UDim2.new(1, 0, 0, 148) or UDim2.new(1, 0, 0, 38)}):Play()
-					Color.Visible = Colorpicker.Toggled
-					Hue.Visible = Colorpicker.Toggled
-					ColorpickerFrame.F.Line.Visible = Colorpicker.Toggled
-				end)
-
-				local function UpdateColorPicker()
-					ColorpickerBox.BackgroundColor3 = Color3.fromHSV(ColorH, ColorS, ColorV)
-					Color.BackgroundColor3 = Color3.fromHSV(ColorH, 1, 1)
-					Colorpicker:Set(ColorpickerBox.BackgroundColor3)
-					ColorpickerConfig.Callback(ColorpickerBox.BackgroundColor3)
-					SaveCfg(game.GameId)
-				end
-
-				ColorH = 1 - (math.clamp(HueSelection.AbsolutePosition.Y - Hue.AbsolutePosition.Y, 0, Hue.AbsoluteSize.Y) / Hue.AbsoluteSize.Y)
-				ColorS = (math.clamp(ColorSelection.AbsolutePosition.X - Color.AbsolutePosition.X, 0, Color.AbsoluteSize.X) / Color.AbsoluteSize.X)
-				ColorV = 1 - (math.clamp(ColorSelection.AbsolutePosition.Y - Color.AbsolutePosition.Y, 0, Color.AbsoluteSize.Y) / Color.AbsoluteSize.Y)
-
-				AddConnection(Color.InputBegan, function(input)
-					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-						if ColorInput then ColorInput:Disconnect() end
-						ColorInput = AddConnection(RunService.RenderStepped, function()
-							local ColorX = (math.clamp(Mouse.X - Color.AbsolutePosition.X, 0, Color.AbsoluteSize.X) / Color.AbsoluteSize.X)
-							local ColorY = (math.clamp(Mouse.Y - Color.AbsolutePosition.Y, 0, Color.AbsoluteSize.Y) / Color.AbsoluteSize.Y)
-							ColorSelection.Position = UDim2.new(ColorX, 0, ColorY, 0)
-							ColorS = ColorX
-							ColorV = 1 - ColorY
-							UpdateColorPicker()
-						end)
-					end
-				end)
-
-				AddConnection(Color.InputEnded, function(input)
-					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-						if ColorInput then ColorInput:Disconnect() end
-					end
-				end)
-
-				AddConnection(Hue.InputBegan, function(input)
-					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-						if HueInput then HueInput:Disconnect() end
-						HueInput = AddConnection(RunService.RenderStepped, function()
-							local HueY = (math.clamp(Mouse.Y - Hue.AbsolutePosition.Y, 0, Hue.AbsoluteSize.Y) / Hue.AbsoluteSize.Y)
-							HueSelection.Position = UDim2.new(0.5, 0, HueY, 0)
-							ColorH = 1 - HueY
-							UpdateColorPicker()
-						end)
-					end
-				end)
-
-				AddConnection(Hue.InputEnded, function(input)
-					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-						if HueInput then HueInput:Disconnect() end
-					end
-				end)
-
-				function Colorpicker:Set(Value)
-					Colorpicker.Value = Value
-					ColorpickerBox.BackgroundColor3 = Colorpicker.Value
-					ColorpickerConfig.Callback(Colorpicker.Value)
-				end
-
-				Colorpicker:Set(Colorpicker.Value)
-				if ColorpickerConfig.Flag then FloprLib.Flags[ColorpickerConfig.Flag] = Colorpicker end
-				return Colorpicker
-			end  
-			return ElementFunction   
-		end	
-
-		local ElementFunction = {}
-		function ElementFunction:AddSection(SectionConfig)
-			SectionConfig.Name = SectionConfig.Name or "Section"
-
-			local SectionFrame = SetChildren(SetProps(MakeElement("TFrame"), {
-				Size = UDim2.new(1, 0, 0, 26),
-				Parent = Container
-			}), {
-				AddThemeObject(SetProps(MakeElement("Label", SectionConfig.Name, 14), {
-					Size = UDim2.new(1, -12, 0, 16),
-					Position = UDim2.new(0, 0, 0, 3),
-					Font = Enum.Font.GothamSemibold
-				}), "TextDark"),
-				SetChildren(SetProps(MakeElement("TFrame"), {AnchorPoint = Vector2.new(0, 0), Size = UDim2.new(1, 0, 1, -24), Position = UDim2.new(0, 0, 0, 23), Name = "Holder"}), {
-					MakeElement("List", 0, 6)
-				}),
-			})
-
-			AddConnection(SectionFrame.Holder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-				SectionFrame.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y + 31)
-				SectionFrame.Holder.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y)
-			end)
-
-			local SectionFunction = {}
-			for i, v in next, GetElements(SectionFrame.Holder) do SectionFunction[i] = v end
-			return SectionFunction
-		end	
-
-		for i, v in next, GetElements(Container) do ElementFunction[i] = v end
-
-		if TabConfig.PremiumOnly then
-			for i, v in next, ElementFunction do ElementFunction[i] = function() end end    
-			Container:FindFirstChild("UIListLayout"):Destroy()
-			Container:FindFirstChild("UIPadding"):Destroy()
-			SetChildren(SetProps(MakeElement("TFrame"), {Size = UDim2.new(1, 0, 1, 0), Parent = ItemParent}), {
-				AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://3610239960"), {Size = UDim2.new(0, 18, 0, 18), Position = UDim2.new(0, 15, 0, 15), ImageTransparency = 0.4}), "Text"),
-				AddThemeObject(SetProps(MakeElement("Label", "Unauthorised Access", 14), {Size = UDim2.new(1, -38, 0, 14), Position = UDim2.new(0, 38, 0, 18), TextTransparency = 0.4}), "Text"),
-				AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://4483345875"), {Size = UDim2.new(0, 56, 0, 56), Position = UDim2.new(0, 84, 0, 110)}), "Text"),
-				AddThemeObject(SetProps(MakeElement("Label", "Premium Features", 14), {Size = UDim2.new(1, -150, 0, 14), Position = UDim2.new(0, 150, 0, 112), Font = Enum.Font.GothamBold}), "Text"),
-				AddThemeObject(SetProps(MakeElement("Label", "This part of the script is locked to Premium users.", 12), {Size = UDim2.new(1, -200, 0, 14), Position = UDim2.new(0, 150, 0, 138), TextWrapped = true, TextTransparency = 0.4}), "Text")
-			})
-		end
-		return ElementFunction   
-	end  
-	
-	return TabFunction
-end   
-
--- Уничтожение интерфейса
-function FloprLib:Destroy()
-	Flopr:Destroy()
-end
-
-return FloprLib
+				local ColorpickerContainer = Create("Frame", {Position = UDim2.new(0, 0, 0, 32), Size = UDim2.new(1
